@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ institute.name }} | {{ institute.intake }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --card-bg: rgba(15, 23, 42, 0.05);
+        }
+        body {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-image: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.15), transparent 45%),
+                              radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.2), transparent 50%);
+        }
+        .floating-nav {
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            box-shadow: 0 25px 45px rgba(15, 23, 42, 0.12);
+            backdrop-filter: blur(20px);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(71, 85, 105, 0.5);
+        }
+        .course-card {
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+        .course-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 35px rgba(37, 99, 235, 0.25);
+        }
+        .modern-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.8));
+        }
+        .dark .modern-card {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+        }
+        .cta-gradient {
+            background-image: linear-gradient(120deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 18px 30px rgba(37, 99, 235, 0.35);
+        }
+        .cta-gradient:hover {
+            filter: brightness(1.05);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <nav class="floating-nav sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="{{ institute.image_path }}" class="h-10 w-10 rounded-lg" alt="Logo">
+                <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ institute.name }}</h1>
+            </div>
+            <a href="{{ url_for('admin_login') }}">Login</a>
+            <div class="flex gap-4 items-center">
+                <button id="searchBtn" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+                <button id="themeToggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <svg id="sunIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v2a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l-1.414-1.414A2 2 0 1012 14.828l1.414 1.414a1 1 0 00.707.293 1 1 0 001-1.414zM2.05 5.464A1 1 0 103.464 4.05a1 1 0 00-1.414 1.414zM17.657 17.657a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707zM5.464 17.657l1.414-1.414a1 1 0 01.707-.293 1 1 0 011 1.414l-1.414 1.414a1 1 0 01-1.414 0zM13 10a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path></svg>
+                    <svg id="moonIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div id="searchBar" class="hidden bg-slate-50 dark:bg-slate-800 px-4 py-3 border-t dark:border-slate-700">
+            <input type="text" id="courseSearch" placeholder="Search courses..." class="w-full px-4 py-2 rounded-lg border dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 px-4">
+        <div class="glass-panel max-w-6xl mx-auto text-center rounded-3xl py-10 px-6">
+            <img src="{{ institute.image_path }}" class="h-20 w-20 mx-auto mb-4 rounded-xl shadow-lg" alt="Institute Logo">
+            <h1 class="text-4xl font-bold mb-2">{{ institute.name }}</h1>
+            <p class="text-xl font-semibold text-blue-100">{{ institute.intake }}</p>
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for item in institute.general_requirements %}
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-sm">{{ item }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold mb-8 text-center">Available Courses</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="coursesGrid">
+            {% for c in courses %}
+            <div class="course-card modern-card rounded-xl shadow-lg overflow-hidden border border-white/50 dark:border-slate-700 hover:shadow-xl">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                    <h3 class="text-white font-bold text-lg">{{ c.title }}</h3>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">Price:</span>
+                        <span class="font-bold text-blue-600 dark:text-blue-400 text-lg">{{ c.price }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">Duration:</span>
+                        <span class="font-semibold">{{ c.duration }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">Schedule:</span>
+                        <span class="font-semibold text-sm">{{ c.days }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-slate-600 dark:text-slate-400">Time:</span>
+                        <span class="font-semibold text-sm">{{ c.time }}</span>
+                    </div>
+                    <button class="cta-gradient w-full mt-4 text-white py-2 rounded-lg font-semibold transition enrollBtn" data-course="{{ c.title }}">Enroll Now</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <section class="bg-slate-50 dark:bg-slate-800 py-12 px-4 mt-12 border-t dark:border-slate-700">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8 text-center">Get in Touch</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form id="contactForm" class="space-y-4 glass-panel rounded-3xl p-6">
+                    <input type="text" name="name" placeholder="Full Name" required class="w-full px-4 py-3 rounded-lg border dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="email" name="email" placeholder="Email Address" required class="w-full px-4 py-3 rounded-lg border dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="tel" name="phone" placeholder="Phone Number" required class="w-full px-4 py-3 rounded-lg border dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <textarea name="message" placeholder="Message" rows="4" required class="w-full px-4 py-3 rounded-lg border dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <button type="submit" class="cta-gradient w-full text-white py-3 rounded-lg font-semibold transition">Send Inquiry</button>
+                </form>
+                <div class="space-y-4 glass-panel rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-6">Share with Others</h3>
+                    <a href="{{ share_links.whatsapp }}" target="_blank" class="flex items-center gap-3 p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-5.031 1.378c-3.055 2.364-3.905 6.75-1.904 10.293 1.914 3.405 5.574 5.236 9.287 4.772 4.069-.543 7.068-3.993 7.352-8.627.059-1.066-.325-2.128-.954-2.99a10.025 10.025 0 00-3.342-3.684c-1.433-1.073-3.89-1.064-5.404.331Z"/></svg>
+                        WhatsApp
+                    </a>
+                    <a href="{{ share_links.twitter }}" target="_blank" class="flex items-center gap-3 p-4 bg-blue-400 hover:bg-blue-500 text-white rounded-lg font-semibold transition">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-7.655 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
+                        Twitter
+                    </a>
+                    <a href="{{ share_links.facebook }}" target="_blank" class="flex items-center gap-3 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-2.457 1.429-3.8 3.698-3.8 1.052 0 1.954.078 2.216.114v2.568h-1.52c-1.193 0-1.423.562-1.423 1.386v1.412h2.844l-.369 3.667h-2.475v7.98H9.101Z"/></svg>
+                        Facebook
+                    </a>
+                    <a href="{{ share_links.full }}" target="_blank" class="flex items-center gap-3 p-4 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.658 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                        Copy Direct Link
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-white py-8 px-4 text-center">
+        <p>&copy; 2025 {{ institute.name }}. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        function updateThemeIcons() {
+            if (htmlElement.classList.contains('dark')) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
+            updateThemeIcons();
+        });
+
+        updateThemeIcons();
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            document.getElementById('searchBar').classList.toggle('hidden');
+        });
+
+        document.getElementById('courseSearch').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.course-card');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+
+        document.querySelectorAll('.enrollBtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                alert('Thank you for your interest in: ' + e.target.dataset.course + '\n\nPlease fill the contact form below to complete your inquiry.');
+            });
+        });
+
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/contact', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                alert('Thank you! We will get back to you soon.');
+                e.target.reset();
+            } else {
+                alert('Error sending inquiry. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
